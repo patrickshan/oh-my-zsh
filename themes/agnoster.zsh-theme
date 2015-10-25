@@ -172,6 +172,7 @@ prompt_status() {
   [[ -n "$symbols" ]] && prompt_segment black default "$symbols"
 }
 
+# change based on http://www.anishathalye.com/2015/02/07/an-asynchronous-shell-prompt/
 setopt prompt_subst # enable command substition in prompt
 
 PROMPT='$(prompt_cmd)' # single quotes to prevent immediate execution
