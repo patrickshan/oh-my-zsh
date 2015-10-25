@@ -172,6 +172,50 @@ prompt_status() {
   [[ -n "$symbols" ]] && prompt_segment black default "$symbols"
 }
 
+setopt prompt_subst # enable command substition in prompt
+
+PROMPT='$(prompt_cmd)' # single quotes to prevent immediate execution
+RPROMPT='' # no initial prompt, set dynamically
+
+ASYNC_PROC=0
+function precmd() {
+    function async() {
+        # save to temp file
+        printf "%s" "$(rprompt_cmd)" > "${HOME}/.zsh_tmp_prompt"
+
+        # signal parent
+        kill -s USR1 $$
+    }
+
+    # do not clear RPROMPT, let it persist
+
+    # kill child if necessary
+    if [[ "${ASYNC_PROC}" != 0 ]]; then
+        kill -s HUP $ASYNC_PROC >/dev/null 2>&1 || :
+    fi
+
+    # start background computation
+    async &!
+    ASYNC_PROC=$!
+}
+
+function TRAPUSR1() {
+    # read from temp file
+    RPROMPT="$(cat ${HOME}/.zsh_tmp_prompt)"
+
+    # reset proc number
+    ASYNC_PROC=0
+
+    # redisplay
+    zle && zle reset-prompt
+}
+
+## Right prompt
+rprompt_cmd() {
+  prompt_git
+  prompt_hg
+}
+
 ## Main prompt
 build_prompt() {
   RETVAL=$?
@@ -179,8 +223,6 @@ build_prompt() {
   prompt_virtualenv
   prompt_context
   prompt_dir
-  prompt_git
-  prompt_hg
   prompt_end
 }
 
