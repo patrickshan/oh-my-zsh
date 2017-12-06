@@ -8,15 +8,12 @@ rbenv_version() {
   rbenv version 2>/dev/null | awk '{print $1}'
 }
 
-#if [ -e ~/.kube-prompt.zsh ]; then
-#  source ~/.kube-prompt.zsh
-#  k8s_prompt_info="%{$fg_bold[yellow]%}$(__kube_ps1)%{$reset_color%}"
-#else
-#  k8s_prompt_info=''
-#fi
+kube_current() {
+  kubectl config view --minify --output 'jsonpath={.current-context} {.contexts[0].context.namespace}' 2>/dev/null
+}
 
 PROMPT='
-%{$fg_bold[green]%}${PWD/#$HOME/~}%{$reset_color%}$(git_prompt_info) ⌚ %{$fg_bold[red]%}%*%{$reset_color%}
+%{$fg_bold[green]%}${PWD/#$HOME/~}%{$reset_color%}$(git_prompt_info) %{$fg_bold[yellow]%}$(kube_current)%{$reset_color%} ⌚ %{$fg_bold[red]%}%*%{$reset_color%}
 $ '
 
 # Must use Powerline font, for \uE0A0 to render.
